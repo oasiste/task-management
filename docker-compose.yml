@@ -1,0 +1,39 @@
+services:
+  db:
+    image: postgres:16-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: app
+      POSTGRES_DB: authdb
+    volumes:
+      - ./docker/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U app -d authdb"]
+      interval: 3s
+      retries: 20
+  auth:
+    build: { context: ., dockerfile: auth-service/Dockerfile }
+    depends_on: { db: { condition: service_healthy } }
+    environment:
+      DB_URL: r2dbc:postgresql://db:5432/authdb
+      JWT_PRIVATE_KEY_PATH: /keys/private.pem
+      JWT_PUBLIC_KEY_PATH: /keys/public.pem
+    volumes: ["./keys:/keys:ro"]
+  tasks:
+    build: { context: ., dockerfile: task-service/Dockerfile }
+    depends_on: { db: { condition: service_healthy } }
+    environment:
+      DB_URL: r2dbc:postgresql://db:5432/taskdb
+      JWT_PUBLIC_KEY_PATH: /keys/public.pem
+    volumes: ["./keys:/keys:ro"]
+  gateway:
+    build: { context: ., dockerfile: api-gateway/Dockerfile }
+    ports: ["8080:8080"]
+    depends_on: [auth, tasks]
+    environment:
+      AUTH_URL: http://auth:8081
+      TASK_URL: http://tasks:8082
+      JWT_PUBLIC_KEY_PATH: /keys/public.pem
+    volumes: ["./keys:/keys:ro"]

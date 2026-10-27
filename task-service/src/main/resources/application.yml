@@ -1,0 +1,15 @@
+server:
+  port: 8082
+spring:
+  r2dbc:
+    url: ${DB_URL:r2dbc:postgresql://localhost:5432/taskdb}
+    username: ${DB_USER:app}
+    password: ${DB_PASSWORD:app}
+  sql:
+    init:
+      mode: always
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          public-key-location: file:${JWT_PUBLIC_KEY_PATH:./keys/public.pem}

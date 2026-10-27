@@ -1,0 +1,13 @@
+server:
+  port: 8081
+spring:
+  r2dbc:
+    url: ${DB_URL:r2dbc:postgresql://localhost:5432/authdb}
+    username: ${DB_USER:app}
+    password: ${DB_PASSWORD:app}
+  sql:
+    init:
+      mode: always
+jwt:
+  private-key: ${JWT_PRIVATE_KEY_PATH:./keys/private.pem}
+  public-key: ${JWT_PUBLIC_KEY_PATH:./keys/public.pem}

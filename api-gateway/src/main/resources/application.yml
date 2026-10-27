@@ -1,0 +1,21 @@
+server:
+  port: 8080
+spring:
+  application:
+    name: api-gateway
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          public-key-location: file:${JWT_PUBLIC_KEY_PATH:./keys/public.pem}
+  cloud:
+    gateway:
+      routes:
+        - id: auth
+          uri: ${AUTH_URL:http://localhost:8081}
+          predicates:
+            - Path=/auth/**
+        - id: tasks
+          uri: ${TASK_URL:http://localhost:8082}
+          predicates:
+            - Path=/tasks/**
