@@ -3,7 +3,7 @@ Feature: Registration and JWT login via API Gateway
   Background:
     * url baseUrl
     * def UUID = Java.type('java.util.UUID')
-    * def email = 'karate-' + UUID.randomUUID().toString() + '@example.com'
+    * def email = 'e2e-' + UUID.randomUUID().toString() + '@inteview.com'
     * def credentials = { email: '#(email)', password: 'password123' }
 
   Scenario: Register, log in, and reject incorrect password
