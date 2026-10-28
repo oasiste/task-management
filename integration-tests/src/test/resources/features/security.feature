@@ -33,7 +33,7 @@ Feature: Authentication and task ownership enforcement
 
     Given path 'tasks', taskId
     And header Authorization = bearerB
-    And request { title: 'Hijacked', status: 'DONE' }
+    And request { title: 'new value', status: 'DONE' }
     When method put
     Then status 404
 
@@ -42,7 +42,6 @@ Feature: Authentication and task ownership enforcement
     When method delete
     Then status 404
 
-    # Cleanup using the rightful owner's token
     Given path 'tasks', taskId
     And header Authorization = bearerA
     When method delete

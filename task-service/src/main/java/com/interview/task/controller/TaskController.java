@@ -4,7 +4,7 @@ import com.interview.task.model.Task;
 import com.interview.task.service.TaskService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -17,29 +17,28 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/tasks")
+@RequiredArgsConstructor
 public class TaskController {
+
     private final TaskService taskService;
 
-    public TaskController(TaskService taskService) {
-        this.taskService = taskService;
-    }
-
-    public record TaskInput(@NotBlank String title, String description,
+    public record TaskInput(@NotBlank String title,
+                            String description,
                             @NotBlank String status,
                             LocalDate dueDate) {}
 
-    private UUID owner(Jwt jwt) {
+    private UUID getUserId(Jwt jwt) {
         return UUID.fromString(jwt.getSubject());
     }
 
     @GetMapping
     public Flux<Task> list(@AuthenticationPrincipal Jwt jwt) {
-        return taskService.list(owner(jwt));
+        return taskService.list(getUserId(jwt));
     }
 
     @GetMapping("/{id}")
     public Mono<Task> get(@PathVariable UUID id,@AuthenticationPrincipal Jwt jwt) {
-        return taskService.get(id,owner(jwt));
+        return taskService.get(id, getUserId(jwt));
     }
 
     @PostMapping
@@ -47,19 +46,19 @@ public class TaskController {
     public Mono<Task> create(
             @Valid @RequestBody TaskInput input,
             @AuthenticationPrincipal Jwt jwt) {
-        return taskService.create(input,owner(jwt));
+        return taskService.create(input, getUserId(jwt));
     }
 
     @PutMapping("/{id}")
     public Mono<Task> update(@PathVariable UUID id,@Valid @RequestBody TaskInput input,
                              @AuthenticationPrincipal Jwt jwt) {
-        return taskService.update(id,input,owner(jwt));
+        return taskService.update(id,input, getUserId(jwt));
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public Mono<Void> delete(@PathVariable UUID id,@AuthenticationPrincipal Jwt jwt) {
-        return taskService.delete(id,owner(jwt));
+        return taskService.delete(id, getUserId(jwt));
     }
 
 }

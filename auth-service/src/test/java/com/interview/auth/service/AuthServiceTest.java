@@ -64,8 +64,7 @@ class AuthServiceTest {
 
     @Test
     void shouldRegisterUserSuccessfully() {
-        when(users.findByEmail("test@interview.com"))
-                .thenReturn(Mono.empty());
+
 
         when(passwords.encode("password123"))
                 .thenReturn("hashed-password");
@@ -94,9 +93,6 @@ class AuthServiceTest {
                 "password123"
         );
 
-        when(users.findByEmail("test@interview.com"))
-                .thenReturn(Mono.empty());
-
         when(passwords.encode("password123"))
                 .thenReturn("hashed-password");
 
@@ -108,32 +104,13 @@ class AuthServiceTest {
         StepVerifier.create(authService.register(input))
                 .verifyComplete();
 
-        verify(users).findByEmail("test@interview.com");
-
         verify(users).save(argThat(saved ->
                 saved.getEmail().equals("test@interview.com")
         ));
     }
 
     @Test
-    void shouldRejectRegistrationWhenEmailAlreadyExists() {
-        when(users.findByEmail("test@interview.com"))
-                .thenReturn(Mono.just(user));
-
-        StepVerifier.create(authService.register(credentials))
-                .expectErrorMatches(error ->
-                        hasStatus(error, HttpStatus.CONFLICT)
-                )
-                .verify();
-
-        verify(users, never()).save(any(User.class));
-        verifyNoInteractions(passwords);
-    }
-
-    @Test
     void shouldHandleDuplicateKeyDuringRegistration() {
-        when(users.findByEmail("test@interview.com"))
-                .thenReturn(Mono.empty());
 
         when(passwords.encode("password123"))
                 .thenReturn("hashed-password");

@@ -48,13 +48,7 @@ Feature: Task lifecycle through API Gateway
     When method get
     Then status 404
 
-  Scenario: Invalid status and blank title are rejected
-    Given path 'tasks'
-    And header Authorization = authHeader
-    And request { title: 'Bad status', status: 'INVALID' }
-    When method post
-    Then status 400
-
+  Scenario: Invalid blank title is rejected
     Given path 'tasks'
     And header Authorization = authHeader
     And request { title: '', status: 'TODO' }

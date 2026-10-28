@@ -1,6 +1,6 @@
 
 
-## Design decision
+## ## Architecture
 
 The Task Management System was designed using a microservices architecture consisting of three services:
 
@@ -9,6 +9,18 @@ API Gateway: Handles incoming requests, validates JWT tokens, and routes request
 Auth Service: Handles user registration and authentication, issuing a JWT token upon successful login.
 
 Task Service: Handles task CRUD operations, ensuring users can only access their own tasks.
+
+```mermaid
+flowchart TD
+    Client["Client"] --> Gateway["API Gateway :8080"]
+
+    Gateway -->|"Register / Login"| Auth["Auth Service :8081"]
+    Gateway -->|"Tasks - JWT required"| Task["Task Service :8082"]
+
+    Auth --> DB[("PostgreSQL")]
+    Task --> DB
+```
+
 
 ## How to Run the Application
 
