@@ -26,6 +26,19 @@ flowchart TD
     Task --> DB
 ```
 
+## Assumptions
+
+- Users have an id, unique email (case-insensitive), and password.
+
+- Tasks have an id, userId, title, description, status, and optional due date.
+
+- JWT tokens expire after 5 minutes.
+
+- A valid JWT lets users manage all their own tasks.
+
+- Karate integration tests require the Docker Compose environment to be running.
+
+- Karate tests access the application through http://localhost:8080.
 
 ## How to Run the Application
 

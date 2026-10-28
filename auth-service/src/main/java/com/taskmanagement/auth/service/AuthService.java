@@ -70,7 +70,7 @@ public class AuthService {
                 .issuer("task-auth")
                 .subject(String.valueOf(user.getId()))
                 .issuedAt(now)
-                .expiresAt(now.plus(1, ChronoUnit.HOURS))
+                .expiresAt(now.plus(5, ChronoUnit.MINUTES))
                 .build();
 
         JwsHeader header = JwsHeader
