@@ -1,14 +1,19 @@
+## Project overview
 
+The system exposes a REST API that allows users to:
 
-## ## Architecture
+- Register an account.
+- Log in and receive a JWT access token.
+- Create, list, update, and delete their own tasks.
+- Access protected endpoints only when authenticated.
 
-The Task Management System was designed using a microservices architecture consisting of three services:
+The architecture separates these responsibilities into three services:
 
-API Gateway: Handles incoming requests, validates JWT tokens, and routes requests to the appropriate service.
+- API Gateway: Handles incoming requests, validates JWT tokens, and routes requests to the appropriate service.
 
-Auth Service: Handles user registration and authentication, issuing a JWT token upon successful login.
+- Auth Service: Handles user registration and authentication, issuing a JWT token upon successful login.
 
-Task Service: Handles task CRUD operations, ensuring users can only access their own tasks.
+- Task Service: Handles task CRUD operations, ensuring users can only access their own tasks.
 
 ```mermaid
 flowchart TD

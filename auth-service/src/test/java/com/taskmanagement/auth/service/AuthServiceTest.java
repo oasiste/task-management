@@ -8,11 +8,13 @@ import com.taskmanagement.auth.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -42,6 +44,9 @@ class AuthServiceTest {
     @Mock
     private JwtEncoder jwt;
 
+    @Mock
+    private R2dbcEntityTemplate template;
+
     @InjectMocks
     private AuthService authService;
 
@@ -69,7 +74,7 @@ class AuthServiceTest {
         when(passwords.encode("password123"))
                 .thenReturn("hashed-password");
 
-        when(users.save(any(User.class)))
+        when(template.insert(any(User.class)))
                 .thenAnswer(invocation ->
                         Mono.just(invocation.getArgument(0))
                 );
@@ -77,13 +82,14 @@ class AuthServiceTest {
         StepVerifier.create(authService.register(credentials))
                 .verifyComplete();
 
-        verify(users).save(argThat(saved ->
+        verify(template).insert(ArgumentMatchers.<User>argThat(saved ->
                 saved.getId() != null &&
                         saved.getEmail().equals("test@interview.com") &&
                         saved.getPasswordHash().equals("hashed-password")
         ));
 
         verify(passwords).encode("password123");
+        verify(users, never()).save(any(User.class));
     }
 
     @Test
@@ -96,17 +102,19 @@ class AuthServiceTest {
         when(passwords.encode("password123"))
                 .thenReturn("hashed-password");
 
-        when(users.save(any(User.class)))
+        when(template.insert(ArgumentMatchers.<User>any()))
                 .thenAnswer(invocation ->
-                        Mono.just(invocation.getArgument(0))
+                        Mono.just(invocation.getArgument(0, User.class))
                 );
 
         StepVerifier.create(authService.register(input))
                 .verifyComplete();
 
-        verify(users).save(argThat(saved ->
-                saved.getEmail().equals("test@interview.com")
+        verify(template).insert(ArgumentMatchers.<User>argThat(user ->
+                user.getEmail().equals("test@interview.com")
         ));
+
+        verify(passwords).encode("password123");
     }
 
     @Test
@@ -115,7 +123,7 @@ class AuthServiceTest {
         when(passwords.encode("password123"))
                 .thenReturn("hashed-password");
 
-        when(users.save(any(User.class)))
+        when(template.insert(ArgumentMatchers.<User>any()))
                 .thenReturn(Mono.error(
                         new DuplicateKeyException("Duplicate email")
                 ));
@@ -125,6 +133,9 @@ class AuthServiceTest {
                         hasStatus(error, HttpStatus.CONFLICT)
                 )
                 .verify();
+
+        verify(template).insert(ArgumentMatchers.<User>any());
+        verify(passwords).encode("password123");
     }
 
     @Test

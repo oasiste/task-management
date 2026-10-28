@@ -7,6 +7,7 @@ import com.taskmanagement.auth.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jose.jws.SignatureAlgorithm;
@@ -29,6 +30,7 @@ public class AuthService {
     private final UserRepository users;
     private final PasswordEncoder passwords;
     private final JwtEncoder jwt;
+    private final R2dbcEntityTemplate template;
 
     public Mono<Void> register(Credentials credentials) {
         String email = normalizeEmail(credentials.email());
@@ -36,7 +38,7 @@ public class AuthService {
         return Mono.fromCallable(() -> passwords.encode(credentials.password()))
                 .subscribeOn(Schedulers.boundedElastic())
                 .map(hash -> new User(UUID.randomUUID(), email, hash))
-                .flatMap(users::save)
+                .flatMap(template::insert)
                 .then()
                 .onErrorMap(DuplicateKeyException.class,
                         e -> new ResponseStatusException(
